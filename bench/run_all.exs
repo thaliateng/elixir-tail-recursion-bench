@@ -1,4 +1,5 @@
 quick? = System.get_env("QUICK") == "1"
+reductions_only? = System.get_env("REDUCTIONS_ONLY") == "1"
 
 selected_functions =
   case System.get_env("FUNCTIONS") do
@@ -24,10 +25,13 @@ integer_values =
     else: [10, 100, 1_000, 5_000, 10_000]
 
 time_config =
-  if quick? do
-    [warmup: 0.5, time: 1, memory_time: 0.5, reduction_time: 0.5]
-  else
-    [warmup: 2, time: 5, memory_time: 2, reduction_time: 2]
+  cond do
+    # Reductions do not depend on the clock, so they can be measured on their own
+    # without overwriting the time and memory results.
+    reductions_only? and quick? -> [warmup: 0, time: 0, memory_time: 0, reduction_time: 0.5]
+    reductions_only? -> [warmup: 0, time: 0, memory_time: 0, reduction_time: 2]
+    quick? -> [warmup: 0.5, time: 1, memory_time: 0.5, reduction_time: 0.5]
+    true -> [warmup: 2, time: 5, memory_time: 2, reduction_time: 2]
   end
 
 # Inputs, generated once and shared by all strategies
@@ -118,7 +122,7 @@ os_version =
 
 environment = """
 Date (UTC): #{DateTime.utc_now() |> DateTime.to_iso8601()}
-Mode: #{if quick?, do: "quick", else: "full"}
+Mode: #{if quick?, do: "quick", else: "full"}#{if reductions_only?, do: " (reductions only)", else: ""}
 Elixir: #{System.version()}
 Erlang/OTP: #{:erlang.system_info(:otp_release)}
 System version: #{:erlang.system_info(:system_version) |> to_string() |> String.trim()}
@@ -126,32 +130,75 @@ Emulator flavor: #{:erlang.system_info(:emu_flavor)}
 Logical processors: #{:erlang.system_info(:logical_processors)}
 Schedulers online: #{:erlang.system_info(:schedulers_online)}
 OS: #{inspect(:os.type())} #{os_version}
+Clock: #{inspect(:erlang.system_info(:os_monotonic_time_source))}
 List sizes: #{inspect(list_sizes, charlists: :as_lists)}
 Body-recursive reverse limit: #{body_reverse_limit}
 Factorial and Fibonacci values: #{inspect(integer_values, charlists: :as_lists)}
 Times (s): #{inspect(time_config)}
 """
 
-File.write!("results/environment.txt", environment)
+environment_file =
+  if reductions_only?, do: "results/environment_reductions.txt", else: "results/environment.txt"
+
+File.write!(environment_file, environment)
 IO.puts(environment)
+
+formatters = fn name ->
+  if reductions_only? do
+    [Benchee.Formatters.Console]
+  else
+    [
+      Benchee.Formatters.Console,
+      {Benchee.Formatters.CSV, file: "results/#{name}.csv"},
+      {Benchee.Formatters.JSON, file: "results/#{name}.json"}
+    ]
+  end
+end
+
+# benchee_csv and benchee_json 1.0 do not export reductions, so they are written here.
+write_reductions = fn name, suite ->
+  header =
+    "Name,Input,Reductions Average,Reductions Median,Reductions Minimum," <>
+      "Reductions Maximum,Reductions Standard Deviation,Reductions Sample Size\n"
+
+  rows =
+    Enum.map(suite.scenarios, fn scenario ->
+      s = scenario.reductions_data.statistics
+
+      Enum.join(
+        [
+          scenario.job_name,
+          scenario.input_name,
+          s.average,
+          s.median,
+          s.minimum,
+          s.maximum,
+          s.std_dev,
+          s.sample_size
+        ],
+        ","
+      ) <> "\n"
+    end)
+
+  File.write!("results/#{name}_reductions.csv", [header | rows])
+end
 
 # Run
 
 for {name, jobs, inputs} <- experiments, inputs != [] do
   IO.puts("\n=== #{name} ===\n")
 
-  Benchee.run(
-    jobs,
-    time_config ++
-      [
-        inputs: inputs,
-        title: name,
-        pre_check: true,
-        formatters: [
-          Benchee.Formatters.Console,
-          {Benchee.Formatters.CSV, file: "results/#{name}.csv"},
-          {Benchee.Formatters.JSON, file: "results/#{name}.json"}
+  suite =
+    Benchee.run(
+      jobs,
+      time_config ++
+        [
+          inputs: inputs,
+          title: name,
+          pre_check: true,
+          formatters: formatters.(name)
         ]
-      ]
-  )
+    )
+
+  write_reductions.(name, suite)
 end

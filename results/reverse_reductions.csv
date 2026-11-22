@@ -1,0 +1,13 @@
+Name,Input,Reductions Average,Reductions Median,Reductions Minimum,Reductions Maximum,Reductions Standard Deviation,Reductions Sample Size
+enum,n = 10,3.0,3.0,3,3,0.0,551538
+tail_recursion,n = 10,12.0,12.0,12,12,0.0,549952
+body_recursion,n = 10,31.0,31.0,31,31,0.0,515367
+enum,n = 100,25.0,25.0,25,25,0.0,333639
+tail_recursion,n = 100,142.0,142.0,142,142,0.0,282298
+body_recursion,n = 100,435.0,435.0,435,435,0.0,84568
+enum,n = 1000,224.0,224.0,224,224,0.0,102581
+tail_recursion,n = 1000,1202.0,1202.0,1202,1202,0.0,88790
+body_recursion,n = 1000,37652.0,37652.0,37652,37652,0.0,1120
+enum,n = 10000,2216.0,2216.0,2216,2216,0.0,15562
+tail_recursion,n = 10000,12002.0,12002.0,12002,12002,0.0,11162
+body_recursion,n = 10000,2804910.0,2804910.0,2804910,2804910,0.0,5

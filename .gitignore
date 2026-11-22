@@ -30,3 +30,7 @@ erl_crash.dump
 
 # Language Server temporary files.
 .elixir_ls/
+
+# Raw benchmark samples are published as GitHub Release assets.
+/results/*.json
+/results/*_raw.csv

@@ -1,0 +1,14 @@
+Date (UTC): 2026-11-22T23:27:12.113000Z
+Mode: full (reductions only)
+Elixir: 1.20.3
+Erlang/OTP: 29
+System version: Erlang/OTP 29 [erts-17.0.5] [source] [64-bit] [smp:16:16] [ds:16:16:10] [async-threads:1] [jit:ns]
+Emulator flavor: jit
+Logical processors: 16
+Schedulers online: 16
+OS: {:win32, :nt} 10.0.19045
+Clock: [function: :QueryPerformanceCounter, resolution: 10000000, used_resolution: 9765, extended: :no, parallel: :yes, time: 1016389409792]
+List sizes: [10, 100, 1000, 10000, 100000, 1000000]
+Body-recursive reverse limit: 10000
+Factorial and Fibonacci values: [10, 100, 1000, 5000, 10000]
+Times (s): [warmup: 0, time: 0, memory_time: 0, reduction_time: 2]

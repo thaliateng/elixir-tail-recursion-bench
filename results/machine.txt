@@ -1,0 +1,8 @@
+CPU: 13th Gen Intel(R) Core(TM) i5-1334U (10 cores: 2 performance + 8 efficiency; 12 threads)
+CPU max/min frequency: 4600 MHz / 400 MHz
+Caches: L1d 352 KiB, L1i 576 KiB, L2 6.5 MiB, L3 12 MiB
+Memory: 15 GiB
+OS: Arch Linux, kernel 7.2.14-zen1-1-zen x86_64
+CPU frequency governor: powersave (intel_pstate)
+Erlang clock: clock_gettime CLOCK_MONOTONIC, resolution 1000000000, used_resolution 1000000000
+Machine: notebook, plugged in, not used during the run
